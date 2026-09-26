@@ -1,0 +1,9 @@
+screener - third-party notices
+==============================
+
+Tesseract trained data (tessdata_best: ell.traineddata, eng.traineddata)
+  https://github.com/tesseract-ocr/tessdata_best, commit e12c65a915945e4c28e237a9b52bc4a8f39a0cec
+  Licensed under the Apache License, Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
+
+Tesseract OCR itself is not bundled. screener runs the tesseract command installed separately
+(Homebrew: brew install tesseract), licensed under the Apache License, Version 2.0.

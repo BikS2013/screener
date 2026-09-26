@@ -1,0 +1,52 @@
+{
+  "feedback": {
+    "sound": true,
+    "soundName": "Tink",
+    "toast": true,
+    "toastDurationSeconds": 1.5
+  },
+  "history": {
+    "size": 20
+  },
+  "hotkeys": {
+    "activate": "ctrl+option+cmd+t",
+    "cancel": "escape",
+    "showHistory": "ctrl+option+cmd+h"
+  },
+  "keyboard": {
+    "anchor": "space",
+    "confirm": "return",
+    "defaultStepPoints": 20,
+    "extendModifier": "shift",
+    "fasterModifier": "shift",
+    "fasterStepPoints": 100,
+    "fineModifier": "option",
+    "fineStepPoints": 2,
+    "moveDown": "down",
+    "moveLeft": "left",
+    "moveRight": "right",
+    "moveUp": "up",
+    "nextScreen": "tab",
+    "startInTextMode": false,
+    "toggleTextMode": "t"
+  },
+  "ocr": {
+    "engine": "auto",
+    "languageCorrection": true,
+    "tessdataDir": "~/.tool-agents/screener/tessdata",
+    "tesseractLanguages": "ell+eng",
+    "tesseractPageSegMode": 6,
+    "tesseractPath": "/opt/homebrew/bin/tesseract",
+    "visionLanguages": [
+      "en-US"
+    ]
+  },
+  "output": {
+    "greekCorrection": true,
+    "greekMonotonic": true,
+    "preserveLineBreaks": true
+  },
+  "overlay": {
+    "dimOpacity": 0.12
+  }
+}

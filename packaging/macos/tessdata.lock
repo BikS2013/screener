@@ -1,0 +1,5 @@
+# Tesseract models bundled into screener.app (Contents/Resources/tessdata).
+# Source: https://github.com/tesseract-ocr/tessdata_best (Apache-2.0), pinned to one commit for reproducible builds.
+# Format: <language> <sha256> <url>
+ell 288b4ea00bab450cf39893d22f04a2835a8469b673b5b20dcb39b159d1bbc9b8 https://github.com/tesseract-ocr/tessdata_best/raw/e12c65a915945e4c28e237a9b52bc4a8f39a0cec/ell.traineddata
+eng 8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba https://github.com/tesseract-ocr/tessdata_best/raw/e12c65a915945e4c28e237a9b52bc4a8f39a0cec/eng.traineddata

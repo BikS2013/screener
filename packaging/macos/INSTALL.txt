@@ -1,0 +1,38 @@
+screener - installation notes
+=============================
+
+screener is a menu-bar app. Press a hotkey, select an area on any screen (mouse or keyboard),
+and the text inside it is recognised (English and Greek) and copied to the clipboard.
+
+1. Install
+   Drag "screener" onto the "Applications" shortcut in this window.
+   The app is signed with a Developer ID certificate and notarized by Apple,
+   so macOS opens it without any Gatekeeper warning. Requires macOS 14 or later
+   on Apple silicon.
+
+2. Tesseract (needed for Greek)
+   Install it once with Homebrew:
+     brew install tesseract
+   (The Homebrew cask installs it for you: brew tap BikS2013/screener && brew install --cask screener)
+
+3. First launch
+   Open screener from Applications. It has no Dock icon: look for the viewfinder icon in the
+   menu bar. On the first launch it offers "Create Config from Example", which writes
+   ~/.tool-agents/screener/config.json and installs the Greek and English OCR data next to it.
+
+4. Screen Recording permission
+   The first capture asks for it. Enable screener under
+   System Settings > Privacy & Security > Screen & System Audio Recording,
+   then quit screener (menu bar icon > Quit) and open it again.
+
+5. Use (example configuration)
+   Ctrl-Option-Cmd-T   show the selection overlay on every screen
+   Drag                select an area; the text is copied when you release
+   Arrows              move a crosshair (Shift = faster, Option = fine); Space anchors; Return captures
+   T                   text mode: arrows jump between text lines, Shift+arrows extend, Return captures
+   Tab                 next screen          Esc   cancel
+   Ctrl-Option-Cmd-H   recent captures menu
+   Every key can be changed in Settings (menu bar icon > Settings...).
+
+Upgrading: replace the app in Applications; the permission and settings are kept as long as
+the app stays signed with the same Developer ID.
