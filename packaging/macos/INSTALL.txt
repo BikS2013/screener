@@ -30,6 +30,7 @@ and the text inside it is recognised (English and Greek) and copied to the clipb
    Drag                select an area; the text is copied when you release
    Arrows              move a crosshair (Shift = faster, Option = fine); Space anchors; Return captures
    T                   text mode: arrows jump between text lines, Shift+arrows extend, Return captures
+   F (or click the switch at the bottom)   preserve the screen format / plain sequential text
    Tab                 next screen          Esc   cancel
    Ctrl-Option-Cmd-H   recent captures menu
    Every key can be changed in Settings (menu bar icon > Settings...).

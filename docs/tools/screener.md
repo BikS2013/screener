@@ -4,7 +4,8 @@
         A configurable global hotkey shows an almost-transparent overlay on every connected screen;
         the user drags a rectangle anywhere, the region is captured and OCR'd (English + Greek,
         auto-detected: Vision for Latin text, Tesseract ell+eng when Greek is present) and the
-        recognised text (line breaks preserved) is copied to the clipboard, with a toast, a sound,
+        recognised text (in the on-screen layout or as plain sequential text, switchable in the overlay)
+        is copied to the clipboard, with a toast, a sound,
         and an in-memory capture history in the menu-bar menu. A Settings window edits the config file.
     </objective>
     <command>
@@ -31,8 +32,17 @@
               - "auto"      -> runs both engines in parallel; if Tesseract's output contains Greek
                                characters it wins, otherwise Vision's result is used (Vision is the
                                stronger engine for Latin script but cannot read Greek at all).
-            Vision fragments are re-ordered into reading order (top -> bottom, left -> right); lines
-            are joined with "\n" when output.preserveLineBreaks is true, otherwise with spaces.
+            Both engines report word boxes (Vision per-word boxes; Tesseract TSV output), which are
+            grouped into visual rows (top -> bottom, left -> right) and rendered in one of two formats,
+            chosen per capture with the overlay's format switch (keyboard.toggleFormat, or a click on the
+            switch at the bottom of the active screen; it starts at output.preserveFormat every time):
+              - preserved: the on-screen layout — line breaks, indentation and table columns aligned on
+                a character grid (median character width; a gap wider than 2.5 characters counts as a
+                column gap, ordinary word spacing stays one space), and a blank line for a vertical gap
+                taller than a line.
+              - plain: one sequential text — rows joined with single spaces, a word hyphenated across
+                a line end re-joined ("li-" + "ne" -> "line"), whitespace collapsed.
+            The toast names the format that was used.
             With output.greekMonotonic, stray polytonic marks emitted by the Tesseract Greek model
             ("εἶναι") are converted to monotonic ("είναι"). With output.greekCorrection, Tesseract's
             Greek look-alike mistakes are repaired, every whole-word change confirmed by the macOS Greek
@@ -51,6 +61,8 @@
                 line in that direction, keyboard.extendModifier+arrows (or keyboard.anchor) extends the
                 selection over several lines, a mouse click focuses a line; keyboard.confirm captures.
               - keyboard.nextScreen moves the keyboard focus to the next display; hotkeys.cancel exits.
+              - keyboard.toggleFormat flips the format switch (preserved / plain) at any time, also
+                while dragging, so the choice applies to the capture about to be made.
             The mouse keeps working in both modes (drag to select).
             Warm-up: Apple Vision's accurate recogniser needs ~20 s the first time the system loads its
             model (a system-wide cost that returns after macOS evicts the model). Screener runs the
@@ -116,7 +128,7 @@
             | ocr.tessdataDir               | string (path) | Folder with the traineddata files, e.g. ~/.tool-agents/screener/tessdata    |
             | ocr.tesseractPageSegMode      | integer 0..13 | Tesseract --psm, e.g. 6 (single uniform block)                              |
             | ocr.languageCorrection        | bool          | Vision language correction                                                  |
-            | output.preserveLineBreaks     | bool          | Keep line structure vs join into one paragraph                              |
+            | output.preserveFormat         | bool          | Starting position of the overlay's format switch: true = preserve the on-screen layout, false = plain sequential text (replaces output.preserveLineBreaks from 0.1.0) |
             | output.greekMonotonic         | bool          | Convert polytonic Greek diacritics to monotonic                             |
             | output.greekCorrection        | bool          | Repair Greek look-alike letters/accents/digits; needs the macOS Greek spelling dictionary |
             | keyboard.moveUp/moveDown/moveLeft/moveRight | string | Plain keys (no modifiers), e.g. "up"; move the crosshair / jump between lines |
@@ -130,6 +142,7 @@
             | keyboard.confirm              | string        | Capture the keyboard selection, e.g. "return"                              |
             | keyboard.nextScreen           | string        | Move keyboard focus to the next display, e.g. "tab"                        |
             | keyboard.toggleTextMode       | string        | Switch between free and text mode, e.g. "t"                                |
+            | keyboard.toggleFormat         | string        | Flip the format switch (preserved / plain) for this capture, e.g. "f"      |
             | keyboard.startInTextMode      | bool          | Open the overlay directly in text mode                                     |
 
             All overlay keys (keyboard.* and hotkeys.cancel) must be distinct.
@@ -167,7 +180,10 @@
             # 2. Drag a rectangle over the text on any screen; release to OCR + copy.
             #    Keyboard: ↑↓←→ move 20 pt (⇧ 100 pt, ⌥ 2 pt), Space anchor, arrows stretch, ⏎ capture.
             #    T switches to text mode: arrows jump between text lines, ⇧+arrows extend, ⏎ capture.
-            #    ⇥ moves to the next screen.
+            #    ⇥ moves to the next screen. F flips the format switch: screen format / plain text.
+            #
+            # Headless OCR in either format
+            #   /Applications/screener.app/Contents/MacOS/screener --ocr-file shot.png --format plain
             # 3. Press hotkeys.cancel (⎋) or right-click to dismiss without capturing.
             # 4. Press hotkeys.showHistory (⌃⌥⌘H) to re-copy a recent capture.
             # 5. Settings… in the menu edits config.json (click a hotkey field, press the new combo).

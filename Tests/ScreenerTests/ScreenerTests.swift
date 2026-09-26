@@ -31,24 +31,52 @@ final class KeyComboTests: XCTestCase {
 }
 
 final class TextLayoutTests: XCTestCase {
-    private func fragment(_ text: String, x: CGFloat, y: CGFloat) -> TextFragment {
-        TextFragment(text: text, box: CGRect(x: x, y: y, width: 0.2, height: 0.05))
+    /// A word at character column `column` of row `row` (10 px per character, 20 px rows, 30 px pitch).
+    private func word(_ text: String, column: Int, row: CGFloat) -> LayoutWord {
+        LayoutWord(text: text, box: CGRect(x: CGFloat(column) * 10, y: row * 30, width: CGFloat(text.count) * 10, height: 20))
     }
 
-    func testReadingOrder() {
-        let fragments = [
-            fragment("world", x: 0.4, y: 0.81),
-            fragment("second", x: 0.1, y: 0.5),
-            fragment("Hello", x: 0.1, y: 0.8),
-        ]
-        XCTAssertEqual(TextLayout.assemble(fragments, preserveLineBreaks: true), "Hello world\nsecond")
-        XCTAssertEqual(TextLayout.assemble(fragments, preserveLineBreaks: false), "Hello world second")
+    func testRowsMergeFragmentsOnTheSameLineAndOrderTopToBottom() {
+        let rows = TextLayout.rows(from: [
+            [word("second", column: 0, row: 1)],
+            [word("world", column: 6, row: 0)],
+            [word("Hello", column: 0, row: 0)],
+        ])
+        XCTAssertEqual(rows.map { $0.words.map(\.text) }, [["Hello", "world"], ["second"]])
     }
 
-    func testTesseractNormalisation() {
-        let raw = "line one  \nline two\n\n\n\nnext para\n\u{0C}\n"
-        XCTAssertEqual(TextLayout.normalizeTesseract(raw, preserveLineBreaks: true), "line one\nline two\n\nnext para")
-        XCTAssertEqual(TextLayout.normalizeTesseract(raw, preserveLineBreaks: false), "line one line two next para")
+    func testPreservedKeepsColumnsIndentationAndParagraphGaps() {
+        let rows = TextLayout.rows(from: [
+            [word("Name", column: 0, row: 0), word("Qty", column: 20, row: 0)],
+            [word("Tea", column: 0, row: 1), word("45", column: 20, row: 1)],
+            [word("next", column: 4, row: 3), word("paragraph", column: 9, row: 3)],
+        ])
+        XCTAssertEqual(TextLayout.render(rows, format: .preserved),
+                       "Name                Qty\nTea                 45\n\n    next paragraph")
+    }
+
+    func testPlainJoinsLinesAndRemovesLineEndHyphenation() {
+        let rows = TextLayout.rows(from: [
+            [word("continues", column: 0, row: 0), word("on", column: 10, row: 0), word("the", column: 13, row: 0), word("li-", column: 17, row: 0)],
+            [word("ne", column: 0, row: 1), word("here.", column: 3, row: 1)],
+            [word("Well-known", column: 0, row: 2), word("-", column: 11, row: 2)],
+            [word("Next", column: 0, row: 3)],
+        ])
+        XCTAssertEqual(TextLayout.render(rows, format: .plain), "continues on the line here. Well-known - Next")
+    }
+
+    func testTesseractTSVParsing() {
+        let tsv = """
+        level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext
+        1\t1\t0\t0\t0\t0\t0\t0\t500\t100\t-1\t
+        5\t1\t1\t1\t1\t1\t10\t5\t40\t20\t96\tΚαλημέρα
+        5\t1\t1\t1\t1\t2\t60\t5\t40\t20\t95\tκόσμε
+        5\t1\t1\t1\t2\t1\t10\t40\t40\t20\t93\tHello
+        5\t1\t1\t1\t2\t2\t60\t40\t40\t20\t-1\t\u{20}
+        """
+        let lines = TextLayout.parseTesseractTSV(tsv)
+        XCTAssertEqual(lines.map { $0.map(\.text) }, [["Καλημέρα", "κόσμε"], ["Hello"]])
+        XCTAssertEqual(lines[0][1].box, CGRect(x: 60, y: 5, width: 40, height: 20))
     }
 }
 
@@ -193,6 +221,8 @@ final class KeyboardConfigTests: XCTestCase {
         XCTAssertNoThrow(try ConfigStore.validate(config))
         let bindings = try KeyboardBindings(config: config)
         XCTAssertEqual(bindings.fasterModifier, .shift)
+        XCTAssertEqual(bindings.toggleFormat.canonical, "f")
+        XCTAssertEqual(bindings.startFormat, .preserved)
         XCTAssertEqual(bindings.arrowsDisplay, "↑↓←→")
     }
 
@@ -211,6 +241,9 @@ final class KeyboardConfigTests: XCTestCase {
         XCTAssertThrowsError(try ConfigStore.validate(config))
         config = try example()
         config.keyboard.toggleTextMode = "escape"
+        XCTAssertThrowsError(try ConfigStore.validate(config))
+        config = try example()
+        config.keyboard.toggleFormat = "t"  // same as toggleTextMode
         XCTAssertThrowsError(try ConfigStore.validate(config))
     }
 

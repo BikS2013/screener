@@ -18,7 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.delegate = self
         statusItem.menu = menu
 
-        overlay.onSelect = { [weak self] rect, screen in self?.process(rect: rect, screen: screen) }
+        overlay.onSelect = { [weak self] rect, screen, format in self?.process(rect: rect, screen: screen, format: format) }
         overlay.detectLines = { screen in
             let image = try await ScreenCapture.capture(rect: screen.frame, on: screen)
             return try await TextLineDetector.lines(in: image, screenFrame: screen.frame)
@@ -110,14 +110,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    private func process(rect: CGRect, screen: NSScreen) {
+    private func process(rect: CGRect, screen: NSScreen, format: TextFormat) {
         guard let config else { return }
         isCapturing = true
         Task { @MainActor in
             defer { isCapturing = false }
             do {
                 let image = try await ScreenCapture.capture(rect: rect, on: screen)
-                let result = try await OCR.recognize(image, pixelScale: screen.backingScaleFactor, config: config)
+                let result = try await OCR.recognize(image, pixelScale: screen.backingScaleFactor, config: config, format: format)
                 let text = result.text.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !text.isEmpty else {
                     notify(config, "No text found", detail: result.warning, near: rect, on: screen, success: false)
@@ -127,7 +127,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 history.add(CaptureRecord(text: text, engine: result.engine, date: Date()))
                 let lines = text.components(separatedBy: "\n").count
                 notify(config, "Copied \(text.count) characters",
-                       detail: result.warning ?? "\(lines) line\(lines == 1 ? "" : "s") · \(result.engine)",
+                       detail: result.warning
+                           ?? "\(lines) line\(lines == 1 ? "" : "s") · \(format == .preserved ? "screen format" : "plain text") · \(result.engine)",
                        near: rect, on: screen, success: true)
             } catch {
                 notify(config, "Capture failed", detail: error.localizedDescription, near: rect, on: screen, success: false)

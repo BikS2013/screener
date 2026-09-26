@@ -14,7 +14,7 @@ enum Warmup {
     static func full(config: AppConfig) {
         start(name: "launch") {
             guard let image = sample else { return }
-            _ = try await OCR.recognize(image, pixelScale: 2, config: config)
+            _ = try await OCR.recognize(image, pixelScale: 2, config: config, format: .preserved)
             _ = try await TextLineDetector.lines(in: image, screenFrame: CGRect(x: 0, y: 0, width: 400, height: 60))
         }
     }
@@ -24,7 +24,7 @@ enum Warmup {
         guard config.ocr.engine != .tesseract else { return }
         start(name: "overlay") {
             guard let image = sample else { return }
-            _ = try await OCR.vision(image, config.ocr, preserveLineBreaks: true)
+            _ = try await OCR.vision(image, config.ocr, format: .preserved)
         }
     }
 

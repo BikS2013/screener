@@ -11,6 +11,14 @@
 - **Keyboard overlay not driven end-to-end by automation:** the desktop-automation daemon was unavailable on
   2026-09-26. Navigation and config are unit-tested; the on-screen key flow still needs a hands-on check.
 
+- **Config rename in the next release:** `output.preserveLineBreaks` (0.1.0) became `output.preserveFormat`, and
+  `keyboard.toggleFormat` is new. A 0.1.0 config fails validation with "missing required key" until the user renames
+  the key and adds `"toggleFormat": "f"` (no silent migration, per the no-fallback rule). Mention it in the release notes.
+- **Preserved layout is approximate for proportional fonts:** columns are aligned on a grid from the median character
+  width, so column starts can be off by a character; sentence text keeps single spaces.
+- **Accent repair on split word halves:** in preserved mode the second half of a hyphenated Greek word ("μή" of
+  "γραμ-μή") can lose its accent, because the spell-checker sees only the fragment. Plain mode re-joins the word first.
+
 ## Resolved
 
 - 2026-09-26 — Slow first capture: the ~23 s cost is system-wide (Vision model load, cached across processes

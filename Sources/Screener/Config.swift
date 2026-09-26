@@ -25,7 +25,8 @@ struct OCRConfig: Codable, Equatable {
 }
 
 struct OutputConfig: Codable, Equatable {
-    var preserveLineBreaks: Bool
+    /// Starting position of the overlay's format switch: true = preserve the on-screen layout, false = plain text.
+    var preserveFormat: Bool
     var greekMonotonic: Bool
     var greekCorrection: Bool
 }
@@ -45,6 +46,7 @@ struct KeyboardConfig: Codable, Equatable {
     var confirm: String
     var nextScreen: String
     var toggleTextMode: String
+    var toggleFormat: String
     var startInTextMode: Bool
 }
 
@@ -239,6 +241,7 @@ enum ConfigStore {
         let actions = try [
             ("keyboard.anchor", k.anchor), ("keyboard.confirm", k.confirm),
             ("keyboard.nextScreen", k.nextScreen), ("keyboard.toggleTextMode", k.toggleTextMode),
+            ("keyboard.toggleFormat", k.toggleFormat),
         ].map { name, value in (name, try parseHotkey(value, key: name)) }
         let all = moves + actions + [("hotkeys.cancel", cancel)]
         for (i, first) in all.enumerated() {

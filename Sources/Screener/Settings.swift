@@ -114,6 +114,7 @@ struct SettingsView: View {
                     LabeledContent("Capture selection") { HotkeyField(value: $model.draft.keyboard.confirm, recordingChanged: recordingChanged) }
                     LabeledContent("Next screen") { HotkeyField(value: $model.draft.keyboard.nextScreen, recordingChanged: recordingChanged) }
                     LabeledContent("Toggle text mode") { HotkeyField(value: $model.draft.keyboard.toggleTextMode, recordingChanged: recordingChanged) }
+                    LabeledContent("Toggle format (preserved / plain)") { HotkeyField(value: $model.draft.keyboard.toggleFormat, recordingChanged: recordingChanged) }
                     Toggle("Start in text mode (jump between detected lines)", isOn: $model.draft.keyboard.startInTextMode)
                 }
                 Section("Text recognition") {
@@ -133,7 +134,8 @@ struct SettingsView: View {
                     Toggle("Vision language correction", isOn: $model.draft.ocr.languageCorrection)
                 }
                 Section("Output") {
-                    Toggle("Preserve line breaks", isOn: $model.draft.output.preserveLineBreaks)
+                    Toggle("Format switch starts on \"Preserve screen format\" (off = plain sequential text)",
+                           isOn: $model.draft.output.preserveFormat)
                     Toggle("Convert polytonic Greek to monotonic", isOn: $model.draft.output.greekMonotonic)
                     Toggle("Correct Greek look-alike letters and accents", isOn: $model.draft.output.greekCorrection)
                 }

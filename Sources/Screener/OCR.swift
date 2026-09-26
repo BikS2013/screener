@@ -25,22 +25,23 @@ enum OCRError: LocalizedError {
 }
 
 enum OCR {
-    /// - Parameter pixelScale: pixels per point of the captured image (used to upscale 1x captures for Tesseract).
-    static func recognize(_ image: CGImage, pixelScale: CGFloat, config: AppConfig) async throws -> OCRResult {
-        let preserve = config.output.preserveLineBreaks
-        let result: OCRResult
+    /// - Parameters:
+    ///   - pixelScale: pixels per point of the captured image (used to upscale 1x captures for Tesseract).
+    ///   - format: preserved on-screen layout or one sequential text; chosen per capture in the overlay.
+    static func recognize(_ image: CGImage, pixelScale: CGFloat, config: AppConfig, format: TextFormat) async throws -> OCRResult {
+                let result: OCRResult
         switch config.ocr.engine {
         case .vision:
-            result = OCRResult(text: try await vision(image, config.ocr, preserveLineBreaks: preserve),
+            result = OCRResult(text: try await vision(image, config.ocr, format: format),
                                engine: "Vision", warning: nil)
         case .tesseract:
-            result = OCRResult(text: try await tesseract(image, pixelScale: pixelScale, config.ocr, preserveLineBreaks: preserve),
+            result = OCRResult(text: try await tesseract(image, pixelScale: pixelScale, config.ocr, format: format),
                                engine: "Tesseract", warning: nil)
         case .auto:
             // Vision is the stronger engine for Latin script but cannot read Greek, so both run in
             // parallel and Tesseract wins whenever it sees Greek characters.
-            async let visionText = vision(image, config.ocr, preserveLineBreaks: preserve)
-            async let tesseractText = tesseract(image, pixelScale: pixelScale, config.ocr, preserveLineBreaks: preserve)
+            async let visionText = vision(image, config.ocr, format: format)
+            async let tesseractText = tesseract(image, pixelScale: pixelScale, config.ocr, format: format)
             var tesseractOutput: String?
             var tesseractError: Error?
             do {
@@ -67,7 +68,7 @@ enum OCR {
         return OCRResult(text: text, engine: result.engine, warning: result.warning)
     }
 
-    static func vision(_ image: CGImage, _ ocr: OCRConfig, preserveLineBreaks: Bool) async throws -> String {
+    static func vision(_ image: CGImage, _ ocr: OCRConfig, format: TextFormat) async throws -> String {
         try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 let request = VNRecognizeTextRequest()
@@ -77,11 +78,12 @@ enum OCR {
                 request.automaticallyDetectsLanguage = true
                 do {
                     try VNImageRequestHandler(cgImage: image).perform([request])
-                    let fragments = (request.results ?? []).compactMap { observation -> TextFragment? in
+                    let size = CGSize(width: image.width, height: image.height)
+                    let fragments = (request.results ?? []).compactMap { observation -> [LayoutWord]? in
                         guard let candidate = observation.topCandidates(1).first else { return nil }
-                        return TextFragment(text: candidate.string, box: observation.boundingBox)
+                        return words(of: candidate, lineBox: observation.boundingBox, imageSize: size)
                     }
-                    continuation.resume(returning: TextLayout.assemble(fragments, preserveLineBreaks: preserveLineBreaks))
+                    continuation.resume(returning: TextLayout.render(TextLayout.rows(from: fragments), format: format))
                 } catch {
                     continuation.resume(throwing: error)
                 }
@@ -89,17 +91,41 @@ enum OCR {
         }
     }
 
-    static func tesseract(_ image: CGImage, pixelScale: CGFloat, _ ocr: OCRConfig, preserveLineBreaks: Bool) async throws -> String {
+    static func tesseract(_ image: CGImage, pixelScale: CGFloat, _ ocr: OCRConfig, format: TextFormat) async throws -> String {
         let png = try ImagePrep.pngForTesseract(image, upscale: pixelScale < 2 ? 2 : 1)
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 do {
-                    let raw = try runTesseract(png: png, ocr)
-                    continuation.resume(returning: TextLayout.normalizeTesseract(raw, preserveLineBreaks: preserveLineBreaks))
+                    let tsv = try runTesseract(png: png, ocr)
+                    let rows = TextLayout.rows(from: TextLayout.parseTesseractTSV(tsv))
+                    continuation.resume(returning: TextLayout.render(rows, format: format))
                 } catch {
                     continuation.resume(throwing: error)
                 }
             }
+        }
+    }
+
+    /// Splits a Vision line into words with their own boxes (converted to top-left pixel coordinates),
+    /// so columns inside one observation can be aligned. Falls back to a proportional split when Vision
+    /// cannot box a word.
+    private static func words(of candidate: VNRecognizedText, lineBox: CGRect, imageSize: CGSize) -> [LayoutWord] {
+        func pixels(_ box: CGRect) -> CGRect {
+            CGRect(x: box.minX * imageSize.width, y: (1 - box.maxY) * imageSize.height,
+                   width: box.width * imageSize.width, height: box.height * imageSize.height)
+        }
+        let text = candidate.string
+        let total = max(text.count, 1)
+        return text.split(separator: " ").map { word in
+            let range = word.startIndex..<word.endIndex
+            if let box = (try? candidate.boundingBox(for: range))?.boundingBox, box.width > 0 {
+                return LayoutWord(text: String(word), box: pixels(box))
+            }
+            let start = CGFloat(text.distance(from: text.startIndex, to: word.startIndex)) / CGFloat(total)
+            let share = CGFloat(word.count) / CGFloat(total)
+            let box = CGRect(x: lineBox.minX + start * lineBox.width, y: lineBox.minY,
+                             width: share * lineBox.width, height: lineBox.height)
+            return LayoutWord(text: String(word), box: pixels(box))
         }
     }
 
@@ -111,6 +137,7 @@ enum OCR {
             "-l", ocr.tesseractLanguages,
             "--psm", String(ocr.tesseractPageSegMode),
             "--tessdata-dir", ConfigStore.expandTilde(ocr.tessdataDir),
+            "-c", "tessedit_create_tsv=1", // word boxes, needed to rebuild the on-screen layout
         ]
         var environment = ProcessInfo.processInfo.environment
         environment["OMP_THREAD_LIMIT"] = "1" // multithreading slows Tesseract down on small images

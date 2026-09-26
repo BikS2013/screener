@@ -9,8 +9,9 @@ struct KeyboardBindings {
     let fasterModifier: NSEvent.ModifierFlags
     let fasterStep: CGFloat
     let extendModifier: NSEvent.ModifierFlags
-    let anchor, confirm, nextScreen, toggleTextMode, cancel: KeyCombo
+    let anchor, confirm, nextScreen, toggleTextMode, toggleFormat, cancel: KeyCombo
     let startInTextMode: Bool
+    let startFormat: TextFormat
 
     init(config: AppConfig) throws {
         let k = config.keyboard
@@ -28,8 +29,10 @@ struct KeyboardBindings {
         confirm = try KeyCombo.parse(k.confirm)
         nextScreen = try KeyCombo.parse(k.nextScreen)
         toggleTextMode = try KeyCombo.parse(k.toggleTextMode)
+        toggleFormat = try KeyCombo.parse(k.toggleFormat)
         cancel = try KeyCombo.parse(config.hotkeys.cancel)
         startInTextMode = k.startInTextMode
+        startFormat = config.output.preserveFormat ? .preserved : .plain
     }
 
     var arrowsDisplay: String { [up, down, left, right].map(\.display).joined() }
@@ -114,10 +117,12 @@ final class OverlayController {
         var cursor: CGPoint?
         var status: String?
         var hint: String?
+        /// The format switch; shown on the active screen, also while dragging.
+        var formatSwitch: String?
     }
 
-    /// Called with the selection in global AppKit coordinates and the screen it was drawn on.
-    var onSelect: ((CGRect, NSScreen) -> Void)?
+    /// Called with the selection in global AppKit coordinates, the screen it was drawn on and the chosen format.
+    var onSelect: ((CGRect, NSScreen, TextFormat) -> Void)?
     var onCancel: (() -> Void)?
     /// Returns the text-line rectangles (global coordinates) visible on a screen.
     var detectLines: ((NSScreen) async throws -> [CGRect])?
@@ -136,6 +141,7 @@ final class OverlayController {
     private var anchor: CGPoint?
     private var keyboardUsed = false
     private var mouseDragging = false
+    private var format: TextFormat = .preserved
 
     private var lines: [Int: [CGRect]] = [:]
     private var detecting: Set<Int> = []
@@ -155,6 +161,7 @@ final class OverlayController {
         cursor = NSEvent.mouseLocation
         activeIndex = screens.firstIndex { $0.frame.contains(cursor) } ?? 0
         mode = bindings.startInTextMode ? .text : .free
+        format = bindings.startFormat
         resetSelectionState()
         lines = [:]
         detecting = []
@@ -221,6 +228,8 @@ final class OverlayController {
                 + "\(bindings.toggleTextMode.display) free mode · \(bindings.nextScreen.display) next screen · \(bindings.cancel.display) cancel"
         }
         if mouseDragging { state.hint = nil }
+        state.formatSwitch = (format == .preserved ? "◉ Preserve screen format   ○ Plain text" : "○ Preserve screen format   ◉ Plain text")
+            + "   (\(bindings.toggleFormat.display) or click)"
         return state
     }
 
@@ -272,6 +281,8 @@ final class OverlayController {
             cancel()
         } else if b.toggleTextMode.matches(event) {
             toggleMode()
+        } else if b.toggleFormat.matches(event) {
+            toggleFormat()
         } else if b.nextScreen.matches(event) {
             switchToNextScreen()
         } else if b.confirm.matches(event) {
@@ -304,6 +315,11 @@ final class OverlayController {
     private func cancel() {
         dismiss()
         onCancel?()
+    }
+
+    func toggleFormat() {
+        format = format == .preserved ? .plain : .preserved
+        refresh()
     }
 
     private func toggleMode() {
@@ -447,8 +463,9 @@ final class OverlayController {
 
     private func finish(_ rect: CGRect, on index: Int) {
         let screen = screens[index]
+        let chosen = format
         dismiss()
-        onSelect?(rect, screen)
+        onSelect?(rect, screen, chosen)
     }
 
     private func focusActiveWindow() {
@@ -507,6 +524,8 @@ final class SelectionView: NSView {
 
     private var start: CGPoint?
     private var current: CGPoint?
+    /// Where the format switch was last drawn (view coordinates); a click there flips it.
+    private var formatSwitchRect: CGRect?
 
     private var dragRect: CGRect? {
         guard let start, let current else { return nil }
@@ -541,6 +560,10 @@ final class SelectionView: NSView {
         window?.makeKey()
         window?.makeFirstResponder(self)
         let point = clamp(convert(event.locationInWindow, from: nil))
+        if let formatSwitchRect, formatSwitchRect.contains(point) {
+            MainActor.assumeIsolated { controller?.toggleFormat() }
+            return
+        }
         start = point
         current = point
         MainActor.assumeIsolated { controller?.mouseDragBegan(on: screenIndex) }
@@ -638,6 +661,9 @@ final class SelectionView: NSView {
         if let status = state.status {
             drawBadge(status, centeredAt: CGPoint(x: bounds.midX, y: badgeY), fontSize: 13)
         }
+        formatSwitchRect = state.formatSwitch.map {
+            drawBadge($0, centeredAt: CGPoint(x: bounds.midX, y: bounds.minY + 70), fontSize: 13)
+        }
     }
 
     private func drawCrosshair(at point: CGPoint) {
@@ -655,7 +681,8 @@ final class SelectionView: NSView {
         path.stroke()
     }
 
-    private func drawBadge(_ text: String, centeredAt center: CGPoint, fontSize: CGFloat) {
+    @discardableResult
+    private func drawBadge(_ text: String, centeredAt center: CGPoint, fontSize: CGFloat) -> CGRect {
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .medium),
             .foregroundColor: NSColor.white,
@@ -666,5 +693,6 @@ final class SelectionView: NSView {
         NSColor.black.withAlphaComponent(0.72).setFill()
         NSBezierPath(roundedRect: badge, xRadius: badge.height / 2, yRadius: badge.height / 2).fill()
         (text as NSString).draw(at: CGPoint(x: badge.minX + 10, y: badge.minY + 5), withAttributes: attributes)
+        return badge
     }
 }

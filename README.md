@@ -38,6 +38,14 @@ Inside the overlay you can also select with the keyboard (example-config keys):
 
 **⇥** moves to the next screen, **⎋** cancels, and the mouse keeps working throughout.
 
+**Format switch.** A switch at the bottom of the active screen decides how the text arrives. Press **F** or click it; it works during a drag too:
+
+| ◉ Preserve screen format | ◉ Plain text |
+|---|---|
+| Line breaks, indentation, table columns and paragraph gaps as on screen | One sequential text: lines joined, line-end hyphenation removed |
+
+It starts at `output.preserveFormat` each time the overlay opens.
+
 Change any of these keys in **Settings…** (menu-bar icon): click a field and press the new combination.
 
 ## How it works
@@ -51,7 +59,8 @@ Change any of these keys in **Settings…** (menu-bar icon): click a field and p
 | OCR | `auto`: Apple Vision and Tesseract (`ell+eng`) run in parallel. Tesseract's result wins when it contains Greek |
 | Greek correction | Look-alike letters (µ→μ, "Eva"→"ένα", "kat"→"και"), accents and digits repaired, each word change confirmed by the macOS Greek spell-checker |
 | Text mode | Vision `.fast` finds line boxes on the whole screen (~0.2 s). Spatial navigation moves between them |
-| Output | Reading order rebuilt, line breaks kept, polytonic → monotonic Greek, `NSPasteboard` |
+| Layout | Word boxes from both engines, grouped into rows and rendered either on a character grid (preserved) or as one flowing text (plain) |
+| Output | Polytonic → monotonic Greek, `NSPasteboard` |
 
 **Why two engines:** on this macOS version (27.0), Apple Vision, `RecognizeTextRequest` and VisionKit Live Text
 all lack Greek. Vision reads "Καλημέρα" as "KalnuÉpa". Tesseract's `tessdata_best` Greek model gets it right,

@@ -28,6 +28,7 @@
     "moveUp": "up",
     "nextScreen": "tab",
     "startInTextMode": false,
+    "toggleFormat": "f",
     "toggleTextMode": "t"
   },
   "ocr": {
@@ -44,7 +45,7 @@
   "output": {
     "greekCorrection": true,
     "greekMonotonic": true,
-    "preserveLineBreaks": true
+    "preserveFormat": true
   },
   "overlay": {
     "dimOpacity": 0.12
