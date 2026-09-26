@@ -11,9 +11,10 @@
 - **Keyboard overlay not driven end-to-end by automation:** the desktop-automation daemon was unavailable on
   2026-09-26. Navigation and config are unit-tested; the on-screen key flow still needs a hands-on check.
 
-- **Config rename in the next release:** `output.preserveLineBreaks` (0.1.0) became `output.preserveFormat`, and
+- **Config rename in 0.2.0:** `output.preserveLineBreaks` (0.1.0) became `output.preserveFormat`, and
   `keyboard.toggleFormat` is new. A 0.1.0 config fails validation with "missing required key" until the user renames
-  the key and adds `"toggleFormat": "f"` (no silent migration, per the no-fallback rule). Mention it in the release notes.
+  the key and adds `"toggleFormat": "f"` (no silent migration, per the no-fallback rule). The 0.2.0 release notes
+  explain the edit.
 - **Preserved layout is approximate for proportional fonts:** columns are aligned on a grid from the median character
   width, so column starts can be off by a character; sentence text keeps single spaces.
 - **Accent repair on split word halves:** in preserved mode the second half of a hyphenated Greek word ("μή" of
@@ -35,6 +36,18 @@
   `com.local.screener` needs the permission granted once (the old entry was reset with `tccutil`).
 
 ## Release log
+
+- 2026-09-26 — **0.2.0 build 3** (`v0.2.0-b3`): capture-time format switch (preserve screen format / plain text).
+  Command: `scripts/package-macos-app.sh --bundle-id com.local.screener --version 0.2.0 --build 3
+  --sign-identity 2C7D6068C232BA74073D56085DDBB04E5F14DF30 --notary-profile screener-notary --dmg` from commit `c7ff6f7`.
+  31 tests passed. Notarization `status: Accepted` for the app and the disk image; Gatekeeper `accepted`,
+  `source=Notarized Developer ID` for both.
+  SHA-256: `450764bdd3a47d619e79cb1115c6c6803d852c384b4974cf61e59adcaac9bd64  screener-0.2.0.dmg`,
+  `178060843793cf38786c54992fb95428608ee27b28b1e6979c6daef5f224a3b0  screener-0.2.0-notarized.zip`.
+  Published: https://github.com/BikS2013/screener/releases/tag/v0.2.0-b3 (marked Latest; the anonymous `latest/download`
+  checksum was verified). Homebrew cask `0.2.0,3`: `brew style` clean, `brew audit --strict --online` passed, livecheck `0.2.0,3`.
+  Unusual: build 2 was a local-only, signed but not notarized 0.1.0 package, so the release uses build 3.
+  Installed at `/Applications/screener.app`; build 2 was backed up to `.build/deploy/backup/`.
 
 - 2026-09-26 — **0.1.0 build 1** (`v0.1.0-b1`), first public release.
   Command: `scripts/package-macos-app.sh --bundle-id com.local.screener --version 0.1.0 --build 1
