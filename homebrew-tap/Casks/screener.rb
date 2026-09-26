@@ -19,8 +19,8 @@ cask "screener" do
   end
 
   depends_on arch: :arm64
-  depends_on macos: :sonoma
   depends_on formula: "tesseract"
+  depends_on macos: :sonoma
 
   app "screener.app"
 
