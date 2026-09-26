@@ -21,6 +21,27 @@
 - 2026-09-26 — Greek look-alike letters: fixed by `GreekCorrector` (look-alike mapping + macOS Greek
   spell-checker + accent repair + digit fix). The six test images read perfectly at 11–20 pt.
 
+- **First-run flow not exercised on a clean account:** "Create Config from Example" + bundled tessdata install is
+  unit-tested (`BundledTessdataTests`) but was not run end-to-end on a machine without `~/.tool-agents/screener`.
+- **Screen Recording re-grant after the bundle-id switch:** builds before 0.1.0 used `com.giorgosmarinos.screener`;
+  `com.local.screener` needs the permission granted once (the old entry was reset with `tccutil`).
+
+## Release log
+
+- 2026-09-26 — **0.1.0 build 1** (`v0.1.0-b1`), first public release.
+  Command: `scripts/package-macos-app.sh --bundle-id com.local.screener --version 0.1.0 --build 1
+  --sign-identity 2C7D6068C232BA74073D56085DDBB04E5F14DF30 --notary-profile screener-notary --dmg` from commit `8e3a846`.
+  29 tests passed. Notarization `status: Accepted` for the app and the disk image; Gatekeeper `accepted`,
+  `source=Notarized Developer ID` for both.
+  SHA-256: `b228d30dfbf8c1223afd3502f2154c4ecd5729cc33cb3ecbaa9bf596a6ef6e53  screener-0.1.0.dmg`,
+  `22f2b1fdc8fa30c9333c32aec1cdb52655cd9b00ff6159a39b0b0db8677b77c9  screener-0.1.0-notarized.zip`.
+  Published: https://github.com/BikS2013/screener/releases/tag/v0.1.0-b1 (anonymous download checksum verified).
+  Homebrew cask `0.1.0,1` in https://github.com/BikS2013/homebrew-screener: `brew style` clean, `brew audit --strict --online`
+  passed, livecheck `0.1.0,1`, a scratch-folder install was Gatekeeper-accepted.
+  Unusual: build 1 was packaged twice; the first package preceded a refactor, so the published artifacts
+  were rebuilt from the tagged commit. A notary profile `screener-notary` was created from the untype API key.
+  Installed at `/Applications/screener.app`; the old `~/Applications/Screener.app` was moved to `.build/deploy/backup/`.
+
 ## Dependency vetting log
 
 - 2026-09-26 — No third-party Swift packages. Only Apple system frameworks are used (AppKit, SwiftUI, Carbon,
