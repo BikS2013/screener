@@ -1,6 +1,6 @@
 cask "screener" do
-  version "0.1.0,1"
-  sha256 "b228d30dfbf8c1223afd3502f2154c4ecd5729cc33cb3ecbaa9bf596a6ef6e53"
+  version "0.2.0,3"
+  sha256 "450764bdd3a47d619e79cb1115c6c6803d852c384b4974cf61e59adcaac9bd64"
 
   url "https://github.com/BikS2013/screener/releases/download/v#{version.csv.first}-b#{version.csv.second}/screener-#{version.csv.first}.dmg"
   name "screener"
