@@ -22,6 +22,13 @@
 
 ## Resolved
 
+- 2026-10-09 — **Text mode cut multi-line selections to the width of the end lines.** Selecting from a short line
+  over a long line to another short line captured only the short lines' width (reported with a 184 × 84 selection
+  that truncated "The filename exceeds … then"). Cause: the selection was the union of the anchor and focused
+  rectangles only. Fix: `LineNavigator.span` also includes every detected line lying vertically between the two ends
+  and overlapping them horizontally, at full width, repeating until stable; a separate column beside the selection
+  stays out. Tests: `testSpanIncludesFullWidthOfMiddleLines`, `testSpanLeavesSeparateColumnOut`. Local build 4.
+
 - 2026-09-26 — Slow first capture: the ~23 s cost is system-wide (Vision model load, cached across processes
   until macOS evicts it). `Warmup` runs the pipeline in the background when the config loads and re-warms
   Vision when the overlay opens. If a capture follows a cold model within seconds, it can still wait for the

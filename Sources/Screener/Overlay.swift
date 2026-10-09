@@ -92,6 +92,29 @@ enum LineNavigator {
         return best?.index
     }
 
+    /// The area covered by a multi-line selection from line `a` to line `b`: both end lines plus every line
+    /// lying vertically between them that overlaps the selection horizontally, each at its full width. Repeats
+    /// until stable, so a long middle line widens the selection, while a separate column beside it (no
+    /// horizontal overlap) stays out.
+    static func span(from a: Int, to b: Int, in rects: [CGRect]) -> CGRect {
+        var area = rects[a].union(rects[b])
+        var included: Set<Int> = [a, b]
+        var grew = true
+        while grew {
+            grew = false
+            for (i, rect) in rects.enumerated() where !included.contains(i) {
+                let verticallyInside = rect.midY >= area.minY && rect.midY <= area.maxY
+                let overlapsHorizontally = rect.maxX > area.minX && rect.minX < area.maxX
+                if verticallyInside, overlapsHorizontally {
+                    included.insert(i)
+                    area = area.union(rect)
+                    grew = true
+                }
+            }
+        }
+        return area
+    }
+
     private static func gap(_ a: ClosedRange<CGFloat>, _ b: ClosedRange<CGFloat>) -> CGFloat {
         max(0, max(a.lowerBound, b.lowerBound) - min(a.upperBound, b.upperBound))
     }
@@ -419,9 +442,8 @@ final class OverlayController {
 
     private func textSelection() -> CGRect? {
         guard let focusedLine, let screenLines = lines[activeIndex], screenLines.indices.contains(focusedLine) else { return nil }
-        let start = screenLines[anchorLine ?? focusedLine]
-        let union = start.union(screenLines[focusedLine]).insetBy(dx: -Self.linePadding, dy: -Self.linePadding)
-        return union.intersection(screens[activeIndex].frame)
+        let area = LineNavigator.span(from: anchorLine ?? focusedLine, to: focusedLine, in: screenLines)
+        return area.insetBy(dx: -Self.linePadding, dy: -Self.linePadding).intersection(screens[activeIndex].frame)
     }
 
     private func ensureLines(on index: Int) {

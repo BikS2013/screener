@@ -59,7 +59,8 @@
               - text mode (keyboard.toggleTextMode, or keyboard.startInTextMode): the screen's text lines
                 are detected (Vision fast level, boxes only) and outlined; arrows jump to the nearest
                 line in that direction, keyboard.extendModifier+arrows (or keyboard.anchor) extends the
-                selection over several lines, a mouse click focuses a line; keyboard.confirm captures.
+                selection over several lines (every line between the two ends is included at its full
+                width; a separate column beside them is not), a mouse click focuses a line; keyboard.confirm captures.
               - keyboard.nextScreen moves the keyboard focus to the next display; hotkeys.cancel exits.
               - keyboard.toggleFormat flips the format switch (preserved / plain) at any time, also
                 while dragging, so the choice applies to the capture about to be made.
@@ -173,7 +174,7 @@
             /Applications/screener.app/Contents/MacOS/screener --check-config
             /Applications/screener.app/Contents/MacOS/screener --ocr-file ~/Desktop/shot.png
 
-            # Release: docs/design/release-runbook.md (scripts/package-macos-app.sh)
+            # Release: docs/design/release-runbook.md (build.sh + package.sh, Homebrew tap commit)
 
             # Usage
             # 1. Press hotkeys.activate (default example ⌃⌥⌘T) — every screen dims slightly.

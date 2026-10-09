@@ -203,6 +203,24 @@ final class LineNavigatorTests: XCTestCase {
         XCTAssertNil(LineNavigator.neighbour(of: 3, in: rects, direction: .right))
     }
 
+    func testSpanIncludesFullWidthOfMiddleLines() {
+        // Reproduces the reported case: short first and last lines, a long line between them.
+        let lines = [
+            CGRect(x: 30, y: 270, width: 246, height: 20),   // "Ran 1 shell command"
+            CGRect(x: 30, y: 200, width: 1955, height: 20),  // "The filename exceeds ... then"
+            CGRect(x: 30, y: 172, width: 190, height: 20),   // "verify its CRC."
+            CGRect(x: 30, y: 130, width: 246, height: 20),   // next "Ran 1 shell command" (outside)
+        ]
+        let span = LineNavigator.span(from: 0, to: 2, in: lines)
+        XCTAssertEqual(span, CGRect(x: 30, y: 172, width: 1955, height: 118))
+        XCTAssertEqual(LineNavigator.span(from: 2, to: 0, in: lines), span)
+    }
+
+    func testSpanLeavesSeparateColumnOut() {
+        // Left column rows 0 and 2 selected; the right column (rects 1 and 3) must not be pulled in.
+        XCTAssertEqual(LineNavigator.span(from: 0, to: 4, in: rects), CGRect(x: 0, y: 220, width: 200, height: 100))
+    }
+
     func testNearest() {
         XCTAssertEqual(LineNavigator.nearest(to: CGPoint(x: 350, y: 225), in: rects), 5)
     }

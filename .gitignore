@@ -59,3 +59,7 @@ coverage/
 tmp/
 temp/
 *.tmp
+
+# Release builds (build.sh / package.sh)
+build.noindex/
+dist/
