@@ -1,22 +1,11 @@
 cask "screener" do
-  version "0.2.0,3"
-  sha256 "450764bdd3a47d619e79cb1115c6c6803d852c384b4974cf61e59adcaac9bd64"
+  version "0.2.1"
+  sha256 "0475eea3b053650a373d254eca1c91400112f7d383a61eb1937fb20a5519d4fb"
 
-  url "https://github.com/BikS2013/screener/releases/download/v#{version.csv.first}-b#{version.csv.second}/screener-#{version.csv.first}.dmg"
+  url "https://github.com/BikS2013/screener/releases/download/v#{version}/screener-#{version}.zip"
   name "screener"
-  desc "Select any screen area and copy its text (English and Greek OCR)"
+  desc "Menu bar app that copies the text of any screen area (English and Greek OCR)"
   homepage "https://github.com/BikS2013/screener"
-
-  livecheck do
-    url :url
-    regex(/^v?(\d+(?:\.\d+)+)-b(\d+)$/i)
-    strategy :github_latest do |json, regex|
-      match = json["tag_name"]&.match(regex)
-      next if match.blank?
-
-      "#{match[1]},#{match[2]}"
-    end
-  end
 
   depends_on arch: :arm64
   depends_on formula: "tesseract"
@@ -24,19 +13,39 @@ cask "screener" do
 
   app "screener.app"
 
+  postflight_steps do
+    run "/usr/bin/osascript",
+        args: [
+          "-e",
+          'display notification "Menu bar icon > Create Config from Example." with title "screener installed"',
+        ]
+  end
+
   uninstall quit: "com.local.screener"
 
   zap trash: "~/.tool-agents/screener"
 
   caveats <<~EOS
-    First launch:
-      1. Open screener (menu-bar app, no Dock icon) and click
-         "Create Config from Example". It writes ~/.tool-agents/screener/config.json
-         and installs the Greek and English OCR data next to it.
-      2. Press Ctrl-Option-Cmd-T and allow Screen Recording when macOS asks
-         (System Settings > Privacy & Security > Screen & System Audio Recording),
-         then quit and reopen screener.
+    First launch: open screener (menu bar icon, no Dock icon) and click
+    "Create Config from Example". It writes ~/.tool-agents/screener/config.json
+    and installs the Greek and English OCR data next to it.
 
-    ~/.tool-agents/screener is kept on uninstall and removed on zap.
+    screener requires Screen Recording permission to read the screen:
+      System Settings > Privacy & Security > Screen & System Audio Recording > enable screener
+      (macOS asks on the first capture; quit and reopen screener afterwards)
+
+    To start screener at login:
+      menu bar icon > Launch at Login
+
+    Global hotkeys (configurable in Settings, from the menu bar icon):
+      Ctrl+Option+Cmd+T  — select an area on any screen and copy its text
+      Ctrl+Option+Cmd+H  — recent captures
+
+    Inside the selection overlay:
+      Drag / Arrows      — select (Shift = faster, Option = fine; Space anchors, Return captures)
+      T                  — text mode: arrows jump between text lines, Shift+arrows extend
+      F                  — preserve the screen format / plain sequential text
+      Tab                — next screen
+      Esc                — cancel
   EOS
 end
