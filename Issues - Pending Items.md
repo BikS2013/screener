@@ -44,6 +44,22 @@
 
 ## Release log
 
+- 2026-10-09 — **0.2.1 build 5** (`v0.2.1`): full-width text-mode selections, plus the switch to Jumpee's Homebrew deployment:
+  - `build.sh` / `package.sh` at the root, output in `build.noindex/` and `dist/`;
+  - plain `v<version>` tags;
+  - the cask installs from the release zip, with a post-install notification and caveats listing the permission and every hotkey;
+  - the tap repository is updated with one commit `screener 0.2.1`, no subtree; the `homebrew-tap` remote was removed and
+    `scripts/package-macos-app.sh` / `scripts/update-homebrew-cask.sh` were deleted.
+  Command: `CODESIGN_IDENTITY=2C7D6068C232BA74073D56085DDBB04E5F14DF30 NOTARY_PROFILE=screener-notary bash package.sh`,
+  run from the commit tagged `v0.2.1`. 33 tests passed. Notarization `status: Accepted` for the app and the disk image;
+  Gatekeeper `source=Notarized Developer ID` for both.
+  SHA-256: `0475eea3b053650a373d254eca1c91400112f7d383a61eb1937fb20a5519d4fb  screener-0.2.1.zip`,
+  `cba7b6a3e0e73a1b7d9de92701bf7dbbca19862a2a279371b19a46a718c8229c  screener-0.2.1.dmg`.
+  Published: https://github.com/BikS2013/screener/releases/tag/v0.2.1 (Latest; anonymous zip download checksum verified).
+  Cask `0.2.1` in BikS2013/homebrew-screener (commit `06bcbbe`): `brew style` clean, `brew audit --strict --online` passed,
+  livecheck `0.2.1`, and a scratch-folder install was Gatekeeper-accepted with the caveats shown.
+  Installed at `/Applications/screener.app`; build 4 was backed up to `dist/backup/`.
+
 - 2026-09-26 — **0.2.0 build 3** (`v0.2.0-b3`): capture-time format switch (preserve screen format / plain text).
   Command: `scripts/package-macos-app.sh --bundle-id com.local.screener --version 0.2.0 --build 3
   --sign-identity 2C7D6068C232BA74073D56085DDBB04E5F14DF30 --notary-profile screener-notary --dmg` from commit `c7ff6f7`.
