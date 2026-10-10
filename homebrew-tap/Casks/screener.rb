@@ -2,10 +2,10 @@ cask "screener" do
   version "0.2.1"
   sha256 "0475eea3b053650a373d254eca1c91400112f7d383a61eb1937fb20a5519d4fb"
 
-  url "https://github.com/BikS2013/screener/releases/download/v#{version}/screener-#{version}.zip"
+  url "https://github.com/biks2013-tools/screener/releases/download/v#{version}/screener-#{version}.zip"
   name "screener"
   desc "Menu bar app that copies the text of any screen area (English and Greek OCR)"
-  homepage "https://github.com/BikS2013/screener"
+  homepage "https://github.com/biks2013-tools/screener"
 
   depends_on arch: :arm64
   depends_on formula: "tesseract"

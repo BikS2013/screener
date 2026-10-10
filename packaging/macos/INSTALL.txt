@@ -13,7 +13,7 @@ and the text inside it is recognised (English and Greek) and copied to the clipb
 2. Tesseract (needed for Greek)
    Install it once with Homebrew:
      brew install tesseract
-   (The Homebrew cask installs it for you: brew tap BikS2013/screener && brew install --cask screener)
+   (The Homebrew cask installs it for you: brew tap biks2013-tools/screener && brew install --cask screener)
 
 3. First launch
    Open screener from Applications. It has no Dock icon: look for the viewfinder icon in the

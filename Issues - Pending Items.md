@@ -55,8 +55,8 @@
   Gatekeeper `source=Notarized Developer ID` for both.
   SHA-256: `0475eea3b053650a373d254eca1c91400112f7d383a61eb1937fb20a5519d4fb  screener-0.2.1.zip`,
   `cba7b6a3e0e73a1b7d9de92701bf7dbbca19862a2a279371b19a46a718c8229c  screener-0.2.1.dmg`.
-  Published: https://github.com/BikS2013/screener/releases/tag/v0.2.1 (Latest; anonymous zip download checksum verified).
-  Cask `0.2.1` in BikS2013/homebrew-screener (commit `06bcbbe`): `brew style` clean, `brew audit --strict --online` passed,
+  Published: https://github.com/biks2013-tools/screener/releases/tag/v0.2.1 (Latest; anonymous zip download checksum verified).
+  Cask `0.2.1` in biks2013-tools/homebrew-screener (commit `06bcbbe`): `brew style` clean, `brew audit --strict --online` passed,
   livecheck `0.2.1`, and a scratch-folder install was Gatekeeper-accepted with the caveats shown.
   Installed at `/Applications/screener.app`; build 4 was backed up to `dist/backup/`.
 
@@ -67,7 +67,7 @@
   `source=Notarized Developer ID` for both.
   SHA-256: `450764bdd3a47d619e79cb1115c6c6803d852c384b4974cf61e59adcaac9bd64  screener-0.2.0.dmg`,
   `178060843793cf38786c54992fb95428608ee27b28b1e6979c6daef5f224a3b0  screener-0.2.0-notarized.zip`.
-  Published: https://github.com/BikS2013/screener/releases/tag/v0.2.0-b3 (marked Latest; the anonymous `latest/download`
+  Published: https://github.com/biks2013-tools/screener/releases/tag/v0.2.0-b3 (marked Latest; the anonymous `latest/download`
   checksum was verified). Homebrew cask `0.2.0,3`: `brew style` clean, `brew audit --strict --online` passed, livecheck `0.2.0,3`.
   Unusual: build 2 was a local-only, signed but not notarized 0.1.0 package, so the release uses build 3.
   Installed at `/Applications/screener.app`; build 2 was backed up to `.build/deploy/backup/`.
@@ -79,8 +79,8 @@
   `source=Notarized Developer ID` for both.
   SHA-256: `b228d30dfbf8c1223afd3502f2154c4ecd5729cc33cb3ecbaa9bf596a6ef6e53  screener-0.1.0.dmg`,
   `22f2b1fdc8fa30c9333c32aec1cdb52655cd9b00ff6159a39b0b0db8677b77c9  screener-0.1.0-notarized.zip`.
-  Published: https://github.com/BikS2013/screener/releases/tag/v0.1.0-b1 (anonymous download checksum verified).
-  Homebrew cask `0.1.0,1` in https://github.com/BikS2013/homebrew-screener: `brew style` clean, `brew audit --strict --online`
+  Published: https://github.com/biks2013-tools/screener/releases/tag/v0.1.0-b1 (anonymous download checksum verified).
+  Homebrew cask `0.1.0,1` in https://github.com/biks2013-tools/homebrew-screener: `brew style` clean, `brew audit --strict --online`
   passed, livecheck `0.1.0,1`, a scratch-folder install was Gatekeeper-accepted.
   Unusual: build 1 was packaged twice; the first package preceded a refactor, so the published artifacts
   were rebuilt from the tagged commit. A notary profile `screener-notary` was created from the untype API key.

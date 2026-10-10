@@ -139,17 +139,17 @@ DMG_SHA256=$(shasum -a 256 "$DMG_FILE" | awk '{print $1}')
 (cd "$DIST_DIR" && shasum -a 256 "$(basename "$ZIP_FILE")" "$(basename "$DMG_FILE")" > "$SUMS_FILE")
 
 # Step 9: Homebrew cask for this version (copy kept in this repository; the tap repository
-# BikS2013/homebrew-screener receives the same file, see docs/design/release-runbook.md)
+# biks2013-tools/homebrew-screener receives the same file, see docs/design/release-runbook.md)
 mkdir -p "$(dirname "$CASK_FILE")"
 cat > "$CASK_FILE" << CASK
 cask "screener" do
   version "$VERSION"
   sha256 "$SHA256"
 
-  url "https://github.com/BikS2013/screener/releases/download/v#{version}/screener-#{version}.zip"
+  url "https://github.com/biks2013-tools/screener/releases/download/v#{version}/screener-#{version}.zip"
   name "screener"
   desc "Menu bar app that copies the text of any screen area (English and Greek OCR)"
-  homepage "https://github.com/BikS2013/screener"
+  homepage "https://github.com/biks2013-tools/screener"
 
   depends_on arch: :arm64
   depends_on formula: "tesseract"
@@ -209,4 +209,4 @@ echo ""
 echo "To publish (docs/design/release-runbook.md):"
 echo "  git tag -a v$VERSION -m \"screener $VERSION\" && git push origin main v$VERSION"
 echo "  gh release create v$VERSION \"$ZIP_FILE\" \"$DMG_FILE\" \"$SUMS_FILE\" --title \"screener v$VERSION\" --notes-file <notes.md>"
-echo "  Then copy $CASK_FILE into the tap repository (BikS2013/homebrew-screener), commit \"screener $VERSION\" and push."
+echo "  Then copy $CASK_FILE into the tap repository (biks2013-tools/homebrew-screener), commit \"screener $VERSION\" and push."

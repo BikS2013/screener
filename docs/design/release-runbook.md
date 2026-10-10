@@ -5,7 +5,7 @@ This is the step-by-step procedure for producing a new `screener.app` release, i
 - `build.sh` and `package.sh` sit at the repository root.
 - Builds go to `build.noindex/` and release files to `dist/`.
 - Releases are tagged `v<version>`, and the cask downloads `screener-<version>.zip`.
-- The tap repository `BikS2013/homebrew-screener` gets one commit `screener <version>` per release.
+- The tap repository `biks2013-tools/homebrew-screener` gets one commit `screener <version>` per release.
 
 Follow the steps in order; each one ends with a check that must pass before the next.
 
@@ -21,7 +21,7 @@ Last verified: 2026-10-09 (`v0.2.1`, cask `0.2.1`). Environment: macOS 27.0, Xco
 | 0.2 | Developer ID Application certificate with its private key | `security find-identity -v -p codesigning` lists `Developer ID Application: GEORGIOS MARINOS (9F9H8NCAUB)` | Xcode → Settings → Accounts → Manage Certificates → **+** → Developer ID Application. Export a `.p12` backup. |
 | 0.3 | notarytool keychain profile `screener-notary` | `xcrun notarytool history --keychain-profile screener-notary` prints a history without an error | See 0.3 below |
 | 0.4 | GitHub CLI logged in as `BikS2013` | `gh auth status` | `gh auth login` |
-| 0.5 | Homebrew clone of the tap | `git -C "$(brew --repo biks2013/screener)" remote -v` shows `homebrew-screener` | `brew tap BikS2013/screener` |
+| 0.5 | Homebrew clone of the tap | `git -C "$(brew --repo biks2013-tools/screener)" remote -v` shows `homebrew-screener` | `brew tap biks2013-tools/screener` |
 
 **Two identities share the same name.** Two valid `Developer ID Application: GEORGIOS MARINOS (9F9H8NCAUB)` certificates exist: `2C7D6068C232BA74073D56085DDBB04E5F14DF30` (2026-09-11) and `CEC7876107F7ED244ACA2B9ED7D6E9DE0056931C` (2026-09-18), both expiring 2027-02-01. Signing by name fails as "ambiguous", so pass the SHA-1. Releases use `2C7D6068…`. The app's designated requirement is tied to the team ID, so the Screen Recording permission survives switching between the two.
 
@@ -129,9 +129,9 @@ The Screen Recording permission is kept across builds signed with the same Devel
 ```sh
 git push origin main
 git tag -a v<version> -m "screener <version>" HEAD && git push origin v<version>
-gh release create v<version> --repo BikS2013/screener --title "screener v<version>" --notes-file <notes.md> \
+gh release create v<version> --repo biks2013-tools/screener --title "screener v<version>" --notes-file <notes.md> \
   "dist/screener-<version>.zip" "dist/screener-<version>.dmg" "dist/SHA256SUMS"
-curl -sL -o /tmp/dl.zip https://github.com/BikS2013/screener/releases/download/v<version>/screener-<version>.zip
+curl -sL -o /tmp/dl.zip https://github.com/biks2013-tools/screener/releases/download/v<version>/screener-<version>.zip
 shasum -a 256 /tmp/dl.zip   # must equal the zip line in dist/SHA256SUMS
 ```
 
@@ -143,10 +143,10 @@ Tag history: up to 0.2.0 the tags were `v<version>-b<build>` (`v0.1.0-b1`, `v0.2
 
 ## 7c. Update the Homebrew tap
 
-The tap repository `BikS2013/homebrew-screener` is what `brew tap BikS2013/screener` clones. As with `homebrew-jumpee`, it receives one commit per release. Commit it in Homebrew's own clone of the tap, which is then immediately what `brew` sees:
+The tap repository `biks2013-tools/homebrew-screener` is what `brew tap biks2013-tools/screener` clones. As with `homebrew-jumpee`, it receives one commit per release. Commit it in Homebrew's own clone of the tap, which is then immediately what `brew` sees:
 
 ```sh
-TAP="$(brew --repo biks2013/screener)"
+TAP="$(brew --repo biks2013-tools/screener)"
 git -C "$TAP" pull -q origin main
 cp homebrew-tap/Casks/screener.rb "$TAP/Casks/screener.rb"
 cp homebrew-tap/README.md "$TAP/README.md"
@@ -161,13 +161,13 @@ git add homebrew-tap && git commit -m "homebrew: screener <version>" && git push
 Then verify:
 
 ```sh
-brew style biks2013/screener/screener                          # "no offenses detected"
-brew audit --cask --online --strict biks2013/screener/screener # no output = pass
-brew livecheck --cask biks2013/screener/screener               # "<version> ==> <version>"
-brew info --cask biks2013/screener/screener | head -1          # shows <version>
+brew style biks2013-tools/screener/screener                          # "no offenses detected"
+brew audit --cask --online --strict biks2013-tools/screener/screener # no output = pass
+brew livecheck --cask biks2013-tools/screener/screener               # "<version> ==> <version>"
+brew info --cask biks2013-tools/screener/screener | head -1          # shows <version>
 ```
 
-Do not run `brew install --cask screener` into `/Applications` on the development Mac while screener runs: the cask's `uninstall quit:` stanza would quit it. Test in a scratch folder instead: `brew install --cask --appdir="$(mktemp -d)" biks2013/screener/screener`, then `brew uninstall --cask screener` and reopen `/Applications/screener.app`.
+Do not run `brew install --cask screener` into `/Applications` on the development Mac while screener runs: the cask's `uninstall quit:` stanza would quit it. Test in a scratch folder instead: `brew install --cask --appdir="$(mktemp -d)" biks2013-tools/screener/screener`, then `brew uninstall --cask screener` and reopen `/Applications/screener.app`.
 
 ---
 
